@@ -81,6 +81,11 @@ public class SheepAgent : MonoBehaviour
         }
 
         transform.position = Vector3.MoveTowards(transform.position, _dest, Speed * Time.deltaTime);
+
+        if (Random.Range(0F, 1F) > 0.99)
+        {
+            _currentState = SheepState.Hungry;
+        }
     }
 
     private void ApplyFlee()
@@ -89,6 +94,10 @@ public class SheepAgent : MonoBehaviour
 
     private void ApplyHungry()
     {
+        if (Random.Range(0F, 1F) > 0.99)
+        {
+            _currentState = SheepState.Wander;
+        }
     }
 
     private void ApplyFlock()
