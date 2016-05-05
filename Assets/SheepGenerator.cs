@@ -33,7 +33,8 @@ public class SheepGenerator : MonoBehaviour
     {
         foreach (var position in positions)
         {
-            var sheep = Instantiate(SheepTemplate, position, Quaternion.Euler(0, 0, Random.Range(0, 180))) as GameObject;
+            var rotation = Quaternion.Euler(0, 0, Random.Range(0, 180));
+            var sheep = Instantiate(SheepTemplate, position, rotation) as GameObject;
             if (sheep == null) continue;
             sheep.transform.SetParent(transform);
             _sheeps.Add(sheep);

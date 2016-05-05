@@ -13,15 +13,21 @@ public class SheepAgent : MonoBehaviour
         Wander
     }
 
-    public float Speed;
+    public float BasicSpeed;
+    private float FlockSpeed;
+    private float FleeSpeed;
 
     private readonly HashSet<GameObject> _neighbourSheeps = new HashSet<GameObject>();
+    private readonly HashSet<GameObject> _neighbourDogs = new HashSet<GameObject>();
     private Vector3 _dest;
     private SheepState _currentState;
+    private float _currentSpeed;
 
     private void Start()
     {
-        _currentState = SheepState.Wander;
+        FlockSpeed = 0.8F*BasicSpeed;
+        FleeSpeed = 4.5F*BasicSpeed;
+        SetState(SheepState.Wander);
         _dest = GetRadomness();
     }
 
@@ -76,6 +82,11 @@ public class SheepAgent : MonoBehaviour
         {
             _neighbourSheeps.Add(other.gameObject);
         }
+        else if (other.CompareTag("Dog"))
+        {
+            _neighbourDogs.Add(other.gameObject);
+            SetState(SheepState.Flee);
+        }
         else if (other.CompareTag("Border"))
         {
             _dest.x = transform.position.x -_dest.x;
@@ -90,7 +101,15 @@ public class SheepAgent : MonoBehaviour
             _neighbourSheeps.Remove(other.gameObject);
             if (_neighbourSheeps.Count < 3)
             {
-                _currentState = SheepState.Wander;
+                SetState(SheepState.Wander);
+            }
+        }
+        else if (other.CompareTag("Dog"))
+        {
+            _neighbourDogs.Remove(other.gameObject);
+            if (_neighbourDogs.Count == 0)
+            {
+                SetState(SheepState.Wander);
             }
         }
     }
@@ -99,7 +118,7 @@ public class SheepAgent : MonoBehaviour
     {
         if (_neighbourSheeps.Count >= 3)
         {
-            _currentState = SheepState.Flock;
+            SetState(SheepState.Flock);
             ApplyFlock();
             return;
         }
@@ -111,19 +130,20 @@ public class SheepAgent : MonoBehaviour
 
         if (Random.Range(0F, 1F) > 0.99)
         {
-            _currentState = SheepState.Hungry;
+            SetState(SheepState.Hungry);
         }
     }
 
     private void ApplyFlee()
     {
+        _dest = GetFlee();
     }
 
     private void ApplyHungry()
     {
         if (Random.Range(0F, 1F) > 0.99)
         {
-            _currentState = SheepState.Wander;
+            SetState(SheepState.Wander);
         }
     }
 
@@ -133,8 +153,7 @@ public class SheepAgent : MonoBehaviour
 
         if (Random.Range(0F, 1F) > 0.9995)
         {
-            Debug.Log("wander");
-            _currentState = SheepState.Wander;
+            SetState(SheepState.Wander);
         }
     }
 
@@ -157,15 +176,20 @@ public class SheepAgent : MonoBehaviour
     private Vector3 GetSeparation()
     {
         var sep = new Vector3(0, 0, 0);
-        var count = 0F;
         foreach (var sheep in _neighbourSheeps)
         {
             var p = sheep.transform.position;
             var diff = transform.position - p;
             var len = diff.magnitude;
-            if (Math.Abs(len) < 0.05F) continue;
-            var distanceInv = 1.1F/ diff.magnitude;
-            count += 1;
+            float distanceInv;
+            if (Math.Abs(len) < 0.05F)
+            {
+                distanceInv = 1.1F;
+            }
+            else
+            {
+                distanceInv = 1.1F/ diff.magnitude;
+            }
             sep += new Vector3(diff.normalized.x * distanceInv, diff.normalized.y * distanceInv);
         }
 
@@ -174,7 +198,25 @@ public class SheepAgent : MonoBehaviour
 
     private Vector3 GetFlee()
     {
-        return new Vector3();
+        var flee = new Vector3(0, 0, 0);
+        foreach (var dog in _neighbourDogs)
+        {
+            var p = dog.transform.position;
+            var diff = transform.position - p;
+            var len = diff.magnitude;
+            float distanceInv;
+            if (Math.Abs(len) < 0.05F)
+            {
+                distanceInv = 3F;
+            }
+            else
+            {
+                distanceInv = 3F / diff.magnitude;
+            }
+            flee += new Vector3(diff.normalized.x * distanceInv, diff.normalized.y * distanceInv);
+        }
+
+        return flee;
     }
 
     private Vector3 GetRadomness()
@@ -185,11 +227,32 @@ public class SheepAgent : MonoBehaviour
 
     private void MakeMove()
     {
-        transform.position = Vector3.MoveTowards(transform.position, _dest, Speed * Time.deltaTime);
+        transform.position = Vector3.MoveTowards(transform.position, _dest, _currentSpeed * Time.deltaTime);
     }
 
     private void AdjustRotation()
     {
         transform.rotation = Quaternion.LookRotation(Vector3.forward, _dest - transform.position);
+    }
+
+    public void SetState(SheepState state)
+    {
+        _currentState = state;
+
+        switch (state)
+        {
+                case SheepState.Flee:
+                    _currentSpeed = FleeSpeed;
+                    break;
+
+                case SheepState.Wander:
+                    _currentSpeed = FlockSpeed;
+                    break;
+
+                case SheepState.Flock:
+                case SheepState.Hungry:
+                    _currentSpeed = FlockSpeed;
+                    break;
+        }
     }
 }
