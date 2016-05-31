@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Assets;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -13,10 +14,12 @@ public class SheepAgent : MonoBehaviour
         Wander
     }
 
+    private readonly int MinFlockSize = 3;
+
     private readonly float _mapWidth = 17.1f;
     private readonly float _mapHeight = 8.1f;
 
-    public float BasicSpeed;
+    public float BasicSpeed = 0.3f;
     private float _flockSpeed;
     private float _fleeSpeed;
 
@@ -27,12 +30,48 @@ public class SheepAgent : MonoBehaviour
     private SheepState _currentState;
     private float _currentSpeed;
 
+    private int _cooldown;
+
+    protected Parameters FeParams;
+    protected Parameters FkParams;
+    protected Parameters WrParams;
+
+    protected float FlockLeaveProbability;
+    protected int MaxCooldown;
+
+    public SheepAgent()
+    {
+        FeParams = new Parameters()
+        {
+            FleeCoefficient = 0.4f,
+            AlignmentCoefficient = 0.55f,
+            SeparationCoefficient = 0.05f
+        };
+
+        FkParams = new Parameters()
+        {
+            CohesionCoefficient = 0.85f,
+            AlignmentCoefficient = 0.05f,
+            SeparationCoefficient = 0.1f
+        };
+
+        WrParams = new Parameters()
+        {
+            RadomnessCoefficient = 0.6f,
+            SeparationCoefficient = 0.4f
+        };
+
+        MaxCooldown = 500;
+        FlockLeaveProbability = 0.9999f;
+    }
+
     private void Start()
     {
         _flockSpeed = 0.8f*BasicSpeed;
         _fleeSpeed = 4.5f*BasicSpeed;
         SetState(SheepState.Wander);
         _dest = GetRadomness();
+        _cooldown = 0;
     }
 
     private void FixedUpdate()
@@ -61,8 +100,7 @@ public class SheepAgent : MonoBehaviour
             case SheepState.Wander:
             case SheepState.Flee:
             case SheepState.Flock:
-
-                if (Vector3.Distance(transform.position, _dest) > 0.2)
+                if (!IsAtTarget())
                 {
                     AdjustRotation();
                     MakeMove();
@@ -71,7 +109,7 @@ public class SheepAgent : MonoBehaviour
                 break;
 
             case SheepState.Hungry:
-                if (Vector3.Distance(transform.position, _dest) < 0.2)
+                if (IsAtTarget())
                 {
                     _dest = GetRadomness();
                     AdjustRotation();
@@ -102,7 +140,7 @@ public class SheepAgent : MonoBehaviour
         if (other.gameObject.CompareTag("Sheep"))
         {
             _neighbourSheeps.Remove(other.gameObject);
-            if (_neighbourSheeps.Count < 3)
+            if (_neighbourSheeps.Count < MinFlockSize)
             {
                 SetState(SheepState.Wander);
             }
@@ -119,16 +157,17 @@ public class SheepAgent : MonoBehaviour
 
     private void ApplyWander()
     {
-        if (_neighbourSheeps.Count >= 3)
+        if (_cooldown > 0) _cooldown -= 1;
+        if (_neighbourSheeps.Count >= MinFlockSize && _cooldown == 0)
         {
             SetState(SheepState.Flock);
             ApplyFlock();
             return;
         }
 
-        if (Math.Abs(Vector3.Distance(transform.position, _dest)) < 0.2f)
+        if (IsAtTarget())
         {
-            _dest = 0.8f * GetRadomness() + 0.2f * GetSeparation();
+            _dest = WrParams.RadomnessCoefficient * GetRadomness() + WrParams.SeparationCoefficient * GetSeparation();
         }
 
         if (Random.Range(0f, 1f) > 0.99f)
@@ -139,12 +178,12 @@ public class SheepAgent : MonoBehaviour
 
     private void ApplyFlee()
     {
-        _dest = 0.4f * GetFlee() + 0.55f * GetAlignment() + 0.05f * GetSeparation();
+        _dest = FeParams.FleeCoefficient * GetFlee() + FeParams.AlignmentCoefficient * GetAlignment() + FeParams.SeparationCoefficient * GetSeparation();
     }
 
     private void ApplyHungry()
     {
-        if (Random.Range(0f, 1f) > 0.99f)
+        if (Random.Range(0f, 1f) > 0.999f)
         {
             SetState(SheepState.Wander);
         }
@@ -152,10 +191,11 @@ public class SheepAgent : MonoBehaviour
 
     private void ApplyFlock()
     {
-        _dest = 0.85f * GetCohesion() + 0.1f * GetSeparation() + 0.05f * GetAlignment();
+        _dest = FkParams.CohesionCoefficient * GetCohesion() + FkParams.SeparationCoefficient * GetSeparation() + FkParams.AlignmentCoefficient * GetAlignment();
 
-        if (Random.Range(0f, 1f) > 0.8f)
+        if (Random.Range(0f, 1f) > FlockLeaveProbability)
         {
+            _cooldown = MaxCooldown;
             SetState(SheepState.Wander);
         }
     }
@@ -230,7 +270,7 @@ public class SheepAgent : MonoBehaviour
 
     private Vector3 GetRadomness()
     {
-        var radius = 1f;
+        var radius = 1.5f;
         var randomV = new Vector3(Random.Range(-radius, radius), Random.Range(-radius, radius));
         return transform.position + randomV;
     }
@@ -262,6 +302,11 @@ public class SheepAgent : MonoBehaviour
         }
 
         return strength / len;
+    }
+
+    private bool IsAtTarget()
+    {
+        return Math.Abs(Vector3.Distance(transform.position, _dest)) < 0.2f;
     }
 
     public void SetState(SheepState state)

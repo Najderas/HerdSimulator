@@ -4,7 +4,10 @@ using UnityEngine;
 public class SheepGenerator : MonoBehaviour
 {
     private IList<GameObject> _sheeps;
-    public GameObject SheepTemplate;
+    public GameObject WhiteSheepTemplate;
+    public GameObject BlackSheepTemplate;
+    public GameObject RedSheepTemplate;
+    public GameObject BlueSheepTemplate;
     public int SheepsNumber;
     private readonly int _mapWidth = 17;
     private readonly int _mapHeight = 8;
@@ -21,7 +24,7 @@ public class SheepGenerator : MonoBehaviour
     {
         var sheepPositions = new List<Vector3>();
         var generated = 0;
-        var splitRate = number/20f;
+        var splitRate = Mathf.Ceil(number/20f);
 
         do
         {
@@ -63,7 +66,23 @@ public class SheepGenerator : MonoBehaviour
         foreach (var position in positions)
         {
             var rotation = Quaternion.Euler(0, 0, Random.Range(0, 180));
-            var sheep = Instantiate(SheepTemplate, position, rotation) as GameObject;
+            GameObject sheep;
+            if (Random.Range(0f, 1f) > 0.9f)
+            {
+                sheep = Instantiate(RedSheepTemplate, position, rotation) as GameObject;
+            }
+//            else if (Random.Range(0f, 1f) > 0.9f)
+//            {
+//                sheep = Instantiate(BlackSheepTemplate, position, rotation) as GameObject;
+//            }
+//            else if (Random.Range(0f, 1f) > 0.95f)
+//            {
+//                sheep = Instantiate(BlueSheepTemplate, position, rotation) as GameObject;
+//            }
+            else
+            {
+                sheep = Instantiate(WhiteSheepTemplate, position, rotation) as GameObject;
+            }
             if (sheep == null) continue;
             sheep.transform.SetParent(transform);
             _sheeps.Add(sheep);
