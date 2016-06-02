@@ -23,7 +23,7 @@ public class SheepAgent : MonoBehaviour
     private float _flockSpeed;
     private float _fleeSpeed;
 
-    private readonly HashSet<GameObject> _neighbourSheeps = new HashSet<GameObject>();
+    public readonly HashSet<GameObject> NeighbourSheeps = new HashSet<GameObject>();
     private readonly HashSet<GameObject> _neighbourDogs = new HashSet<GameObject>();
 
     private Vector3 _dest;
@@ -122,7 +122,7 @@ public class SheepAgent : MonoBehaviour
     {
         if (other.CompareTag("Sheep"))
         {
-            _neighbourSheeps.Add(other.gameObject);
+            NeighbourSheeps.Add(other.gameObject);
         }
         else if (other.CompareTag("Dog"))
         {
@@ -139,8 +139,8 @@ public class SheepAgent : MonoBehaviour
     {
         if (other.gameObject.CompareTag("Sheep"))
         {
-            _neighbourSheeps.Remove(other.gameObject);
-            if (_neighbourSheeps.Count < MinFlockSize)
+            NeighbourSheeps.Remove(other.gameObject);
+            if (NeighbourSheeps.Count < MinFlockSize)
             {
                 SetState(SheepState.Wander);
             }
@@ -158,7 +158,7 @@ public class SheepAgent : MonoBehaviour
     private void ApplyWander()
     {
         if (_cooldown > 0) _cooldown -= 1;
-        if (_neighbourSheeps.Count >= MinFlockSize && _cooldown == 0)
+        if (NeighbourSheeps.Count >= MinFlockSize && _cooldown == 0)
         {
             SetState(SheepState.Flock);
             ApplyFlock();
@@ -203,21 +203,21 @@ public class SheepAgent : MonoBehaviour
     private Vector3 GetCohesion()
     {
         var coh = new Vector3();
-        foreach (var sheep in _neighbourSheeps)
+        foreach (var sheep in NeighbourSheeps)
         {
             coh += sheep.transform.position;
         }
 
-        return coh/_neighbourSheeps.Count;
+        return coh/NeighbourSheeps.Count;
     }
 
     private Vector3 GetAlignment()
     {
-        if (_neighbourSheeps.Count == 0) return transform.position;
+        if (NeighbourSheeps.Count == 0) return transform.position;
 
         var strength = 0.5f;
         var ali = new Vector3();
-        foreach (var sheep in _neighbourSheeps)
+        foreach (var sheep in NeighbourSheeps)
         {
             var comp = sheep.GetComponent<SheepAgent>();
             var pDest = comp._dest;
@@ -228,17 +228,17 @@ public class SheepAgent : MonoBehaviour
 
             ali += new Vector3(diff.normalized.x * distanceInv, diff.normalized.y * distanceInv);
         }
-        var result = new Vector3(ali.x/_neighbourSheeps.Count, ali.y/_neighbourSheeps.Count);
+        var result = new Vector3(ali.x/NeighbourSheeps.Count, ali.y/NeighbourSheeps.Count);
         return result + transform.position;
     }
 
     private Vector3 GetSeparation()
     {
-        if (_neighbourSheeps.Count == 0) return transform.position;
+        if (NeighbourSheeps.Count == 0) return transform.position;
 
         var strength = 1.2f;
         var sep = new Vector3(0, 0, 0);
-        foreach (var sheep in _neighbourSheeps)
+        foreach (var sheep in NeighbourSheeps)
         {
             var p = sheep.transform.position;
             var diff = transform.position - p;

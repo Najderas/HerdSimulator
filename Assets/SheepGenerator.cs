@@ -3,7 +3,6 @@ using UnityEngine;
 
 public class SheepGenerator : MonoBehaviour
 {
-    private IList<GameObject> _sheeps;
     public GameObject WhiteSheepTemplate;
     public GameObject BlackSheepTemplate;
     public GameObject RedSheepTemplate;
@@ -11,12 +10,14 @@ public class SheepGenerator : MonoBehaviour
     public int SheepsNumber;
     private readonly int _mapWidth = 17;
     private readonly int _mapHeight = 8;
+    private Shepherd _shepherd;
 
     // Use this for initialization
     private void Start()
     {
         Random.seed = 2;
-        _sheeps = new List<GameObject>();
+        _shepherd = transform.GetComponent<Shepherd>();
+        _shepherd.InitSheep();
         GenerateSheeps(GeneratePositions(SheepsNumber));
     }
 
@@ -83,9 +84,10 @@ public class SheepGenerator : MonoBehaviour
             {
                 sheep = Instantiate(WhiteSheepTemplate, position, rotation) as GameObject;
             }
+
             if (sheep == null) continue;
             sheep.transform.SetParent(transform);
-            _sheeps.Add(sheep);
+            _shepherd.RegisterSheep(sheep);
         }
     }
 
