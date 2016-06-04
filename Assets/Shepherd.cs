@@ -6,7 +6,8 @@ using UnityEngine;
 public class Shepherd : MonoBehaviour
 {
     private HashSet<GameObject> _sheeps;
-    private HashSet<Flock> _flocks;
+    public HashSet<Flock> _flocks;
+    public bool DebugDraw = true;
 
     public void RegisterSheep(GameObject sheep)
     {
@@ -22,6 +23,12 @@ public class Shepherd : MonoBehaviour
     private void FixedUpdate()
     {
         _flocks.Clear();
+        _flocks = SplitTooSmall(GetFlocksByNeighboursNumber());
+    }
+
+    private HashSet<Flock> GetFlocksByNeighboursNumber()
+    {
+        var flocks = new HashSet<Flock>();
         var list = _sheeps.OrderByDescending(s => s.GetComponent<SheepAgent>().NeighbourSheeps.Count);
         var used = new HashSet<GameObject>();
         foreach (var target in list)
@@ -37,9 +44,34 @@ public class Shepherd : MonoBehaviour
                     used.Add(s);
                 }
 
-                _flocks.Add(flock);
+                flocks.Add(flock);
             }
         }
+
+        return flocks;
+    }
+
+    private HashSet<Flock> SplitTooSmall(HashSet<Flock> flocks)
+    {
+        var result = new HashSet<Flock>();
+        foreach (var flock in flocks)
+        {
+            if (flock.GetSheeps().Count < 4)
+            {
+                foreach (var sheep in flock.GetSheeps())
+                {
+                    var newFlock = new Flock();
+                    newFlock.AddSheep(sheep);
+                    result.Add(newFlock);
+                }
+            }
+            else
+            {
+                result.Add(flock);
+            }
+        }
+
+        return result;
     }
 
     private HashSet<GameObject> GetNeighboursForFlock(HashSet<GameObject> result, GameObject sheep, Flock flock)

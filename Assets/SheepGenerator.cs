@@ -55,7 +55,7 @@ public class SheepGenerator : MonoBehaviour
 
     private Vector3 GetRandomVectorFromCenter(Vector3 center, float flockSize)
     {
-        var radius = 1f * Mathf.Ceil(flockSize/10f);
+        var radius = 0.6f * Mathf.Ceil(flockSize/10f);
         var v = Random.insideUnitCircle;
         var x = (v.x * 2 * radius) - radius + center.x;
         var y = (v.y * 2 * radius) - radius + center.y;
