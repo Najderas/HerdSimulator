@@ -6,24 +6,34 @@ namespace Assets
     public class Flock
     {
         private readonly List<GameObject> _sheeps;
-        private Dictionary<string, Vector3> _flockContourVectors;
-        private Dictionary<string, float> _flockBorderPoints;
 
         private Vector3 _leftMost;
         private Vector3 _bottomMost;
         private Vector3 _rightMost;
         private Vector3 _topMost;
 
+        private Vector3 _center;
+
         public Flock()
         {
             _sheeps = new List<GameObject>();
+            _leftMost = new Vector3(20f, 0);
+            _bottomMost = new Vector3(0, 20f);
+            _rightMost = new Vector3(-20f, 0);
+            _topMost = new Vector3(0, -20f);
+            _center = new Vector3();
         }
 
         public void AddSheep(GameObject sheep)
         {
+            CountCenter(sheep);
             _sheeps.Add(sheep);
-            _flockContourVectors = CountFlockContour();
-            _flockBorderPoints = CountFlockBorders();
+            CountFlockContour(sheep);
+        }
+
+        public Vector3 GetCenter()
+        {
+            return _center;
         }
 
         public List<GameObject> GetSheeps()
@@ -33,82 +43,17 @@ namespace Assets
 
         public Dictionary<string, float> GetFlockBorders()
         {
-            return _flockBorderPoints;
-        }
-
-        private Dictionary<string, float> CountFlockBorders()
-        {
-            if (_flockContourVectors != null)
-            {
-                return new Dictionary<string, float>
-                {
-                    {"left", _leftMost.x},
-                    {"right", _rightMost.x},
-                    {"top", _topMost.y},
-                    {"bottom", _bottomMost.y}
-                };
-            }
-
-            var left = 20f;
-            var bottom = 20f;
-            var right = 20f;
-            var top = -20f;
-
-            foreach (var sheep in _sheeps)
-            {
-                var x = sheep.transform.position.x;
-                var y = sheep.transform.position.y;
-
-                left = Mathf.Min(left, x);
-                right = Mathf.Max(right, x);
-                top = Mathf.Max(top, y);
-                bottom = Mathf.Min(bottom, y);
-            }
-
             return new Dictionary<string, float>
             {
-                {"left", left},
-                {"right", right},
-                {"top", top},
-                {"bottom", bottom}
+                {"left", _leftMost.x},
+                {"right", _rightMost.x},
+                {"top", _topMost.y},
+                {"bottom", _bottomMost.y}
             };
         }
 
         public Dictionary<string, Vector3> GetFlockContour()
         {
-            return _flockContourVectors;
-        }
-
-        private Dictionary<string, Vector3> CountFlockContour()
-        {
-            _leftMost = new Vector3(20f, 0);
-            _bottomMost = new Vector3(0, 20f);
-            _rightMost = new Vector3(-20f, 0);
-            _topMost = new Vector3(0, -20f);
-
-            foreach (var sheep in _sheeps)
-            {
-                var x = sheep.transform.position.x;
-                var y = sheep.transform.position.y;
-
-                if (x < _leftMost.x)
-                {
-                    _leftMost = sheep.transform.position;
-                }
-                if (x > _rightMost.x)
-                {
-                    _rightMost = sheep.transform.position;
-                }
-                if (y > _topMost.y)
-                {
-                    _topMost = sheep.transform.position;
-                }
-                if (y < _bottomMost.y)
-                {
-                    _bottomMost = sheep.transform.position;
-                }
-            }
-
             return new Dictionary<string, Vector3>
             {
                 {"left", _leftMost},
@@ -116,6 +61,51 @@ namespace Assets
                 {"top", _topMost},
                 {"bottom", _bottomMost}
             };
+        }
+
+        private void CountCenter(GameObject sheep)
+        {
+            var x = (_center.x * _sheeps.Count + sheep.transform.position.x) / (_sheeps.Count + 1);
+            var y = (_center.y * _sheeps.Count + sheep.transform.position.y) / (_sheeps.Count + 1);
+            _center = new Vector3(x, y);
+        }
+
+        private void SetLeftMost(Vector3 other)
+        {
+            if (other.x < _leftMost.x)
+            {
+                _leftMost = other;
+            }
+        }
+
+        private void SetBottomMost(Vector3 other)
+        {
+            if (other.y < _bottomMost.y) {
+                _bottomMost = other;
+            }
+        }
+
+        private void SetRightMost(Vector3 other)
+        {
+            if (other.x > _rightMost.x) {
+                _rightMost = other;
+            }
+        }
+
+        private void SetTopMost(Vector3 other)
+        {
+            if (other.y > _topMost.y) {
+                _topMost = other;
+            }
+        }
+
+        private void CountFlockContour(GameObject sheep)
+        {
+            var position = sheep.transform.position;
+            SetBottomMost(position);
+            SetLeftMost(position);
+            SetRightMost(position);
+            SetTopMost(position);
         }
     }
 }

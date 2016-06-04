@@ -7,9 +7,6 @@ public class DrawDebug : MonoBehaviour
     private Shepherd _shepherd;
     private const float Margin = 0.2f;
 
-    // ReSharper disable once InconsistentNaming
-    private const float margin = 0.2f; // margin
-
     private void Start()
     {
         _shepherd = FindObjectOfType<Shepherd>();
@@ -17,11 +14,10 @@ public class DrawDebug : MonoBehaviour
 
     private void DrawFlocks()
     {
-        if (_shepherd == null || _shepherd._flocks == null) return;
-        foreach (var flock in _shepherd._flocks)
+        if (_shepherd == null || _shepherd.Flocks == null) return;
+        foreach (var flock in _shepherd.Flocks)
         {
             var contour = flock.GetFlockContour();
-
             DrawLine(contour["left"], contour["top"], Color.yellow);
             DrawLine(contour["top"], contour["right"], Color.yellow);
             DrawLine(contour["right"], contour["bottom"], Color.yellow);

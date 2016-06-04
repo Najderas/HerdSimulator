@@ -6,7 +6,7 @@ using UnityEngine;
 public class Shepherd : MonoBehaviour
 {
     private HashSet<GameObject> _sheeps;
-    public HashSet<Flock> _flocks;
+    public HashSet<Flock> Flocks;
     public bool DebugDraw = true;
 
     public void RegisterSheep(GameObject sheep)
@@ -16,14 +16,14 @@ public class Shepherd : MonoBehaviour
 
     public void InitSheep()
     {
-        _flocks = new HashSet<Flock>();
+        Flocks = new HashSet<Flock>();
         _sheeps = new HashSet<GameObject>();
     }
 
     private void FixedUpdate()
     {
-        _flocks.Clear();
-        _flocks = SplitTooSmall(GetFlocksByNeighboursNumber());
+        Flocks.Clear();
+        Flocks = SplitTooSmall(GetFlocksByNeighboursNumber());
     }
 
     private HashSet<Flock> GetFlocksByNeighboursNumber()
