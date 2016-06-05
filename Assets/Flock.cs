@@ -17,10 +17,10 @@ namespace Assets
         public Flock()
         {
             _sheeps = new List<GameObject>();
-            _leftMost = new Vector3(20f, 0);
-            _bottomMost = new Vector3(0, 20f);
-            _rightMost = new Vector3(-20f, 0);
-            _topMost = new Vector3(0, -20f);
+            _leftMost = new Vector3(float.MaxValue, 0);
+            _bottomMost = new Vector3(0, float.MaxValue);
+            _rightMost = new Vector3(float.MinValue, 0);
+            _topMost = new Vector3(0, float.MinValue);
             _center = new Vector3();
         }
 

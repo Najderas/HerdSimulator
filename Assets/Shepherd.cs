@@ -35,8 +35,12 @@ public class Shepherd : MonoBehaviour
         {
             var targetName = FindTarget();
             var targetObject = GameObject.Find(targetName);
+            if (targetObject == null)
+            {
+                Debug.Log("Finished!");
+                return;
+            }
             var targetFlock = FindClosestFlock(targetObject.transform.position);
-
             _dog.SetTarget(targetObject, targetFlock);
         }
     }

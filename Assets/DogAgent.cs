@@ -53,7 +53,7 @@ public class DogAgent : MonoBehaviour
         }
 
         _dest = _steerPoint;
-        Debug.DrawLine(transform.position, _dest, Color.cyan);
+//        Debug.DrawLine(transform.position, _dest, Color.cyan);
     }
 
     private void Approach()
@@ -63,10 +63,10 @@ public class DogAgent : MonoBehaviour
         if (Vector3.Distance(transform.position, _targetObject.transform.position) <= SafeZone)
         {
             _dest = GoRound(SafeZone, _targetObject.transform.position);
-            Debug.DrawLine(transform.position, _steerPoint, Color.black);
-            Debug.DrawLine(transform.position, _dest, Color.yellow);
+//            Debug.DrawLine(transform.position, _steerPoint, Color.black);
+//            Debug.DrawLine(transform.position, _dest, Color.yellow);
 
-            if (Vector3.Distance(_steerPoint, _dest) < 1f)
+            if (Vector3.Distance(_steerPoint, _dest) < 1f && Vector3.Distance(transform.position, _steerPoint) < Vector3.Distance(transform.position, _targetObject.transform.position))
             {
                 CurrentDogState = DogState.Lead;
             }
@@ -74,7 +74,7 @@ public class DogAgent : MonoBehaviour
         else
         {
             _dest = _steerPoint;
-            Debug.DrawLine(transform.position, _dest, Color.magenta);
+//            Debug.DrawLine(transform.position, _dest, Color.magenta);
         }
     }
 
@@ -133,30 +133,17 @@ public class DogAgent : MonoBehaviour
         _sign = GetSign(_steerPoint, transform.position, _targetObject.transform.position);
     }
 
-    private float Angle360(Vector3 v1, Vector3 v2)
+    private static float Angle360(Vector3 v1, Vector3 v2)
     {
-        //  Acute angle [0,180]
         var angle = Vector3.Angle(v1, v2);
-
-        //  -Acute angle [180,-179]
         var sign = Mathf.Sign(Vector3.Dot(new Vector3(0, 0, 1), Vector3.Cross(v1, v2)));
-
         var signedAngle = angle * sign;
-
-        //  360 angle
         return (signedAngle <= 0) ? 360 + signedAngle : signedAngle;
     }
 
     private bool GetSign(Vector3 v1, Vector3 v2, Vector3 center)
     {
         var angleFromCenter = Vector3.Angle(v1 - center, v2 - center);
-
-        var D = 2 * Mathf.PI  * (angleFromCenter / 360);
-
-        if (D > 1.57f)
-        {
-            return true;
-        }
-        return false;
+        return 2 * Mathf.PI * (angleFromCenter / 360) > 1.57f;
     }
 }

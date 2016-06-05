@@ -73,14 +73,6 @@ public class SheepGenerator : MonoBehaviour
 //            {
 //                sheep = Instantiate(RedSheepTemplate, position, rotation) as GameObject;
 //            }
-//            else if (Random.Range(0f, 1f) > 0.9f)
-//            {
-//                sheep = Instantiate(BlackSheepTemplate, position, rotation) as GameObject;
-//            }
-//            else if (Random.Range(0f, 1f) > 0.95f)
-//            {
-//                sheep = Instantiate(BlueSheepTemplate, position, rotation) as GameObject;
-//            }
 //            else
 //            {
                 sheep = Instantiate(WhiteSheepTemplate, position, rotation) as GameObject;
