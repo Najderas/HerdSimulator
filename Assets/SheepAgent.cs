@@ -15,9 +15,9 @@ public class SheepAgent : MonoBehaviour
     }
 
     private readonly int MinFlockSize = 3;
-
-    private readonly float _mapWidth = 17.1f;
-    private readonly float _mapHeight = 8.1f;
+//
+//    private readonly float _mapWidth = 17.1f;
+//    private readonly float _mapHeight = 8.1f;
 
     public float BasicSpeed = 0.3f;
     private float _flockSpeed;
@@ -68,7 +68,7 @@ public class SheepAgent : MonoBehaviour
     private void Start()
     {
         _flockSpeed = 0.8f*BasicSpeed;
-        _fleeSpeed = 4.5f*BasicSpeed;
+        _fleeSpeed = 5f*BasicSpeed;
         SetState(SheepState.Wander);
         _dest = GetRadomness();
         _cooldown = 0;
@@ -76,6 +76,10 @@ public class SheepAgent : MonoBehaviour
 
     private void FixedUpdate()
     {
+//        if (name == "57")
+//        {
+//            Debug.Log(_currentState);
+//        }
         switch (_currentState)
         {
             case SheepState.Flee:
@@ -100,10 +104,12 @@ public class SheepAgent : MonoBehaviour
             case SheepState.Wander:
             case SheepState.Flee:
             case SheepState.Flock:
+//                if (name == "57") Debug.Log(IsAtTarget());
                 if (!IsAtTarget())
                 {
                     AdjustRotation();
                     MakeMove();
+//                    if (name == "57") Debug.Log("move");
                 }
 
                 break;
@@ -135,6 +141,18 @@ public class SheepAgent : MonoBehaviour
         }
     }
 
+    private void OnTriggerStay2D(Collider2D other)
+    {
+        if (other.CompareTag("Dog"))
+        {
+            SetState(SheepState.Flee);
+//            if (name == "57")
+//            {
+//                Debug.Log("dogleft");
+//            }
+        }
+    }
+
     private void OnTriggerExit2D(Collider2D other)
     {
         if (other.gameObject.CompareTag("Sheep"))
@@ -142,7 +160,14 @@ public class SheepAgent : MonoBehaviour
             NeighbourSheeps.Remove(other.gameObject);
             if (NeighbourSheeps.Count < MinFlockSize)
             {
-                SetState(SheepState.Wander);
+                if (_currentState != SheepState.Flee)
+                {
+                    SetState(SheepState.Wander);
+//                    if (name == "57")
+//                    {
+//                        Debug.Log("wandeer");
+//                    }
+                }
             }
         }
         else if (other.CompareTag("Dog"))
@@ -151,6 +176,10 @@ public class SheepAgent : MonoBehaviour
             if (_neighbourDogs.Count == 0)
             {
                 SetState(SheepState.Wander);
+//                if (name == "57")
+//                {
+//                    Debug.Log("dogleft");
+//                }
             }
         }
     }
@@ -167,7 +196,7 @@ public class SheepAgent : MonoBehaviour
 
         if (IsAtTarget())
         {
-            _dest = WrParams.RadomnessCoefficient * GetRadomness() + WrParams.SeparationCoefficient * GetSeparation();
+            _dest = transform.position + WrParams.RadomnessCoefficient * GetRadomness() + WrParams.SeparationCoefficient * GetSeparation();
         }
 
         if (Random.Range(0f, 1f) > 0.99f)
@@ -178,7 +207,11 @@ public class SheepAgent : MonoBehaviour
 
     private void ApplyFlee()
     {
-        _dest = FeParams.FleeCoefficient * GetFlee() + FeParams.AlignmentCoefficient * GetAlignment() + FeParams.SeparationCoefficient * GetSeparation();
+        _dest = transform.position + FeParams.AlignmentCoefficient * GetAlignment() + FeParams.FleeCoefficient * GetFlee() + FeParams.SeparationCoefficient * GetSeparation();
+//        Debug.DrawLine(transform.position, _dest, Color.black);
+//        Debug.DrawLine(transform.position, transform.position + FeParams.AlignmentCoefficient * GetAlignment(), Color.white);
+//        Debug.DrawLine(transform.position, transform.position + FeParams.FleeCoefficient * GetFlee(), Color.red);
+//        Debug.DrawLine(transform.position, transform.position + FeParams.SeparationCoefficient * GetSeparation(), Color.blue);
     }
 
     private void ApplyHungry()
@@ -191,7 +224,7 @@ public class SheepAgent : MonoBehaviour
 
     private void ApplyFlock()
     {
-        _dest = FkParams.CohesionCoefficient * GetCohesion() + FkParams.SeparationCoefficient * GetSeparation() + FkParams.AlignmentCoefficient * GetAlignment();
+        _dest = transform.position + FkParams.CohesionCoefficient * GetCohesion() + FkParams.SeparationCoefficient * GetSeparation() + FkParams.AlignmentCoefficient * GetAlignment();
 
         if (Random.Range(0f, 1f) > FlockLeaveProbability)
         {
@@ -205,7 +238,7 @@ public class SheepAgent : MonoBehaviour
         var coh = new Vector3();
         foreach (var sheep in NeighbourSheeps)
         {
-            coh += sheep.transform.position;
+            coh += sheep.transform.position - transform.position;
         }
 
         return coh/NeighbourSheeps.Count;
@@ -213,7 +246,7 @@ public class SheepAgent : MonoBehaviour
 
     private Vector3 GetAlignment()
     {
-        if (NeighbourSheeps.Count == 0) return transform.position;
+        if (NeighbourSheeps.Count == 0) return new Vector3();
 
         var strength = 0.5f;
         var ali = new Vector3();
@@ -229,12 +262,12 @@ public class SheepAgent : MonoBehaviour
             ali += new Vector3(diff.normalized.x * distanceInv, diff.normalized.y * distanceInv);
         }
         var result = new Vector3(ali.x/NeighbourSheeps.Count, ali.y/NeighbourSheeps.Count);
-        return result + transform.position;
+        return result;
     }
 
     private Vector3 GetSeparation()
     {
-        if (NeighbourSheeps.Count == 0) return transform.position;
+        if (NeighbourSheeps.Count == 0) return new Vector3();
 
         var strength = 1.2f;
         var sep = new Vector3(0, 0, 0);
@@ -247,12 +280,12 @@ public class SheepAgent : MonoBehaviour
             sep += new Vector3(diff.normalized.x * distanceInv, diff.normalized.y * distanceInv);
         }
 
-        return sep + transform.position;
+        return sep;
     }
 
     private Vector3 GetFlee()
     {
-        if (_neighbourDogs.Count == 0) return transform.position;
+        if (_neighbourDogs.Count == 0) return new Vector3();
 
         var strength = 3f;
         var flee = new Vector3(0, 0, 0);
@@ -265,14 +298,14 @@ public class SheepAgent : MonoBehaviour
             flee += new Vector3(diff.normalized.x * distanceInv, diff.normalized.y * distanceInv);
         }
 
-        return flee + transform.position;
+        return flee;
     }
 
     private Vector3 GetRadomness()
     {
         var radius = 1.5f;
         var randomV = new Vector3(Random.Range(-radius, radius), Random.Range(-radius, radius));
-        return transform.position + randomV;
+        return randomV;
     }
 
     private void MakeMove()
@@ -280,11 +313,6 @@ public class SheepAgent : MonoBehaviour
 //        if (_currentState == SheepState.Flock) Debug.DrawLine(transform.position, _dest, Color.red);
 //        if (_currentState == SheepState.Wander) Debug.DrawLine(transform.position, _dest, Color.blue);
 //        if (_currentState == SheepState.Hungry) Debug.DrawLine(transform.position, _dest, Color.magenta);
-        if (_dest.x > _mapWidth || _dest.x < -_mapWidth || _dest.y > _mapHeight || _dest.y < -_mapHeight)
-        {
-            _dest = transform.position;
-        }
-
         transform.position = Vector3.MoveTowards(transform.position, _dest, _currentSpeed * Time.deltaTime);
     }
 

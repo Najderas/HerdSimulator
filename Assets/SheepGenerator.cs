@@ -64,6 +64,7 @@ public class SheepGenerator : MonoBehaviour
 
     private void GenerateSheeps(IList<Vector3> positions)
     {
+        var count = 0;
         foreach (var position in positions)
         {
             var rotation = Quaternion.Euler(0, 0, Random.Range(0, 180));
@@ -87,6 +88,8 @@ public class SheepGenerator : MonoBehaviour
 
             if (sheep == null) continue;
             sheep.transform.SetParent(transform);
+            sheep.name = string.Format("{0}", count);
+            count += 1;
             _shepherd.RegisterSheep(sheep);
         }
     }
