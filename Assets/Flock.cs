@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Assets
@@ -11,7 +12,6 @@ namespace Assets
         private Vector3 _bottomMost;
         private Vector3 _rightMost;
         private Vector3 _topMost;
-
         private Vector3 _center;
 
         public Flock()
@@ -61,6 +61,11 @@ namespace Assets
                 {"top", _topMost},
                 {"bottom", _bottomMost}
             };
+        }
+
+        public float GetMaxRadius()
+        {
+            return GetFlockContour().Select(contour => Vector3.Distance(_center, contour.Value)).Concat(new[] {0f}).Max();
         }
 
         private void CountCenter(GameObject sheep)

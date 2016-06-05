@@ -43,8 +43,8 @@ public class SheepAgent : MonoBehaviour
     {
         FeParams = new Parameters()
         {
-            FleeCoefficient = 0.4f,
-            AlignmentCoefficient = 0.55f,
+            FleeCoefficient = 0.8f,
+            AlignmentCoefficient = 0.15f,
             SeparationCoefficient = 0.05f
         };
 
@@ -76,10 +76,6 @@ public class SheepAgent : MonoBehaviour
 
     private void FixedUpdate()
     {
-//        if (name == "57")
-//        {
-//            Debug.Log(_currentState);
-//        }
         switch (_currentState)
         {
             case SheepState.Flee:
@@ -104,12 +100,10 @@ public class SheepAgent : MonoBehaviour
             case SheepState.Wander:
             case SheepState.Flee:
             case SheepState.Flock:
-//                if (name == "57") Debug.Log(IsAtTarget());
                 if (!IsAtTarget())
                 {
                     AdjustRotation();
                     MakeMove();
-//                    if (name == "57") Debug.Log("move");
                 }
 
                 break;
@@ -146,10 +140,6 @@ public class SheepAgent : MonoBehaviour
         if (other.CompareTag("Dog"))
         {
             SetState(SheepState.Flee);
-//            if (name == "57")
-//            {
-//                Debug.Log("dogleft");
-//            }
         }
     }
 
@@ -163,10 +153,6 @@ public class SheepAgent : MonoBehaviour
                 if (_currentState != SheepState.Flee)
                 {
                     SetState(SheepState.Wander);
-//                    if (name == "57")
-//                    {
-//                        Debug.Log("wandeer");
-//                    }
                 }
             }
         }
@@ -176,10 +162,6 @@ public class SheepAgent : MonoBehaviour
             if (_neighbourDogs.Count == 0)
             {
                 SetState(SheepState.Wander);
-//                if (name == "57")
-//                {
-//                    Debug.Log("dogleft");
-//                }
             }
         }
     }

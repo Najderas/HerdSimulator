@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Assets;
@@ -7,7 +8,6 @@ public class Shepherd : MonoBehaviour
 {
     private HashSet<GameObject> _sheeps;
     public HashSet<Flock> Flocks;
-    public bool DebugDraw = true;
     private DogAgent _dog;
 
     private void Start()
@@ -26,35 +26,19 @@ public class Shepherd : MonoBehaviour
         _sheeps = new HashSet<GameObject>();
     }
 
-    private GameObject targetObject;
-    private Vector3 targetFlock;
-
     private void FixedUpdate()
     {
         Flocks.Clear();
         Flocks = SplitTooSmall(GetFlocksByNeighboursNumber());
 
-        if (targetObject == null || HasMerged() || IsAtTarget())
+        if (_dog.CurrentDogState == DogAgent.DogState.Wait)
         {
             var targetName = FindTarget();
-            targetObject = GameObject.Find(targetName);
-            targetFlock = FindClosestFlock(targetObject.transform.position);
+            var targetObject = GameObject.Find(targetName);
+            var targetFlock = FindClosestFlock(targetObject.transform.position);
+
+            _dog.SetTarget(targetObject, targetFlock);
         }
-
-//        Debug.Log(targetObject.name);
-        var singlePos = targetObject.transform.position;
-        var diff = (targetFlock - singlePos).normalized * 0.7f;
-        _dog.SetTarget(singlePos - diff);
-    }
-
-    private bool IsAtTarget()
-    {
-        return Vector3.Distance(targetFlock, _dog.transform.position) < 0.3;
-    }
-
-    private bool HasMerged()
-    {
-        return targetObject.GetComponent<SheepAgent>().NeighbourSheeps.Count > 3;
     }
 
     private string FindTarget()
@@ -95,6 +79,11 @@ public class Shepherd : MonoBehaviour
                     currentFlockDist = dist;
                 }
             }
+        }
+
+        if (Math.Abs(currentFlockDist - float.MaxValue) < 0.005f)
+        {
+            target = Flocks.First(f => f.GetCenter() != position).GetCenter();
         }
 
         return target;
