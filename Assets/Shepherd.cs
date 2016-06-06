@@ -67,9 +67,9 @@ public class Shepherd : MonoBehaviour
         return targetName;
     }
 
-    private Vector3 FindClosestFlock(Vector3 position)
+    private Flock FindClosestFlock(Vector3 position)
     {
-        var target = new Vector3(float.MaxValue, float.MaxValue);
+        var target = new Flock();
         var currentFlockDist = float.MaxValue;
 
         foreach (var flock in Flocks)
@@ -79,15 +79,15 @@ public class Shepherd : MonoBehaviour
                 var dist = Vector3.Distance(flock.GetCenter(), position);
                 if (dist < currentFlockDist)
                 {
-                    target = flock.GetCenter();
+                    target = flock;
                     currentFlockDist = dist;
                 }
             }
         }
 
-        if (Math.Abs(currentFlockDist - float.MaxValue) < 0.005f)
+        if (Math.Abs(currentFlockDist - float.MaxValue) < 0.005f || target.GetSheeps().Count == 0)
         {
-            target = Flocks.First(f => f.GetCenter() != position).GetCenter();
+            target = Flocks.First(f => f.GetCenter() != position);
         }
 
         return target;

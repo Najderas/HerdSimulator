@@ -62,7 +62,7 @@ public class SheepAgent : MonoBehaviour
         };
 
         MaxCooldown = 500;
-        FlockLeaveProbability = 0.9999f;
+        FlockLeaveProbability = 0.99995f;
     }
 
     private void Start()

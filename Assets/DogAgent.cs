@@ -1,3 +1,4 @@
+using Assets;
 using UnityEngine;
 
 public class DogAgent : MonoBehaviour
@@ -14,6 +15,7 @@ public class DogAgent : MonoBehaviour
     private const float SafeZone = 2f;
     private Vector3 _dest;
     private Vector3 _flockPosition;
+    private Flock _flock;
     private GameObject _targetObject;
     private float _angle;
     private bool _sign;
@@ -71,6 +73,10 @@ public class DogAgent : MonoBehaviour
                 CurrentDogState = DogState.Lead;
             }
         }
+        else if (Vector3.Distance(transform.position, _flockPosition) < SafeZone + _flock.GetMaxRadius() && Vector3.Distance(_targetObject.transform.position, transform.position) > Vector3.Distance(_targetObject.transform.position, _flockPosition))
+        {
+            _dest = GoRound(SafeZone + _flock.GetMaxRadius(), _flockPosition);
+        }
         else
         {
             _dest = _steerPoint;
@@ -122,11 +128,12 @@ public class DogAgent : MonoBehaviour
         return _targetObject.GetComponent<SheepAgent>().NeighbourSheeps.Count > 3;
     }
 
-    public void SetTarget(GameObject targetObject, Vector3 flockPosition)
+    public void SetTarget(GameObject targetObject, Flock flock)
     {
         CurrentDogState = DogState.Approach;
         _targetObject = targetObject;
-        _flockPosition = flockPosition;
+        _flockPosition = flock.GetCenter();
+        _flock = flock;
         _angle = Angle360(new Vector3(0, 5), _targetObject.transform.position - transform.position);
         _steerPoint = _targetObject.transform.position - (_flockPosition - _targetObject.transform.position).normalized * 1.2f;
 

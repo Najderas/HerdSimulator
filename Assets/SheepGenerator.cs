@@ -69,14 +69,14 @@ public class SheepGenerator : MonoBehaviour
         {
             var rotation = Quaternion.Euler(0, 0, Random.Range(0, 180));
             GameObject sheep;
-//            if (Random.Range(0f, 1f) > 0.9f)
-//            {
-//                sheep = Instantiate(RedSheepTemplate, position, rotation) as GameObject;
-//            }
-//            else
-//            {
+            if (Random.Range(0f, 1f) > 0.9f)
+            {
+                sheep = Instantiate(RedSheepTemplate, position, rotation) as GameObject;
+            }
+            else
+            {
                 sheep = Instantiate(WhiteSheepTemplate, position, rotation) as GameObject;
-//            }
+            }
 
             if (sheep == null) continue;
             sheep.transform.SetParent(transform);
