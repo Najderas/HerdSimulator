@@ -7,18 +7,49 @@ public class SheepGenerator : MonoBehaviour
     public GameObject BlackSheepTemplate;
     public GameObject RedSheepTemplate;
     public GameObject BlueSheepTemplate;
-    public int SheepsNumber;
+    public GuiScript guiScript;
+    public SimulationScript simulationScript;
+
+    public int SheepsNumber
+    {
+        get { return simulationScript.sheepNumber; }
+        set { simulationScript.sheepNumber = value; }
+    }
+    
     private readonly int _mapWidth = 17;
     private readonly int _mapHeight = 8;
-    private Shepherd _shepherd;
+    public Shepherd _shepherd;
 
     // Use this for initialization
     private void Start()
     {
-        Random.seed = 2;
         _shepherd = transform.GetComponent<Shepherd>();
         _shepherd.InitSheep();
+        Random.seed = simulationScript.randomSeed;
+
+    }
+
+    void Update()
+    {
+        if (simulationScript.startSimulation)
+        {
+            StartSimulation();
+            simulationScript.startSimulation = false;
+        }
+        
+    }
+
+    public void StartSimulation()
+    {
+        StopSimulation();
+        if (simulationScript.resetSeedWhileRestart)
+            Random.seed = simulationScript.randomSeed;
         GenerateSheeps(GeneratePositions(SheepsNumber));
+    }
+
+    public void StopSimulation()
+    {
+        _shepherd.DeleteAllSheeps();
     }
 
     private IList<Vector3> GeneratePositions(int number)
@@ -68,6 +99,7 @@ public class SheepGenerator : MonoBehaviour
         {
             var rotation = Quaternion.Euler(0, 0, Random.Range(0, 180));
             GameObject sheep;
+            //TODO: parametrize this constant
             if (Random.Range(0f, 1f) > 0.9f)
             {
                 sheep = Instantiate(RedSheepTemplate, position, rotation) as GameObject;
@@ -90,9 +122,5 @@ public class SheepGenerator : MonoBehaviour
             _shepherd.RegisterSheep(sheep);
         }
     }
-
-    public void SetSeed(int seed)
-    {
-        Random.seed = seed;
-    }
+    
 }

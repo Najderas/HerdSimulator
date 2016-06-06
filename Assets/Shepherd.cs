@@ -55,4 +55,20 @@ public class Shepherd : MonoBehaviour
         }
         return result;
     }
+
+    public void DeleteAllSheeps()
+    {
+        _flocks.Clear();
+        foreach (var sheep in _sheeps)
+        {
+            Destroy(sheep);
+        }
+        _sheeps.Clear();
+    }
+
+    public bool OneFlockLeft()
+    {
+        return _flocks.Count == 1;
+    }
+
 }
