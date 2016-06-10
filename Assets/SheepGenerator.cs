@@ -86,7 +86,7 @@ public class SheepGenerator : MonoBehaviour
 
     private Vector3 GetRandomVectorFromCenter(Vector3 center, float flockSize)
     {
-        var radius = 1f * Mathf.Ceil(flockSize/10f);
+        var radius = 0.6f * Mathf.Ceil(flockSize/10f);
         var v = Random.insideUnitCircle;
         var x = (v.x * 2 * radius) - radius + center.x;
         var y = (v.y * 2 * radius) - radius + center.y;
@@ -95,6 +95,7 @@ public class SheepGenerator : MonoBehaviour
 
     private void GenerateSheeps(IList<Vector3> positions)
     {
+        var count = 0;
         foreach (var position in positions)
         {
             var rotation = Quaternion.Euler(0, 0, Random.Range(0, 180));
@@ -104,14 +105,6 @@ public class SheepGenerator : MonoBehaviour
             {
                 sheep = Instantiate(RedSheepTemplate, position, rotation) as GameObject;
             }
-//            else if (Random.Range(0f, 1f) > 0.9f)
-//            {
-//                sheep = Instantiate(BlackSheepTemplate, position, rotation) as GameObject;
-//            }
-//            else if (Random.Range(0f, 1f) > 0.95f)
-//            {
-//                sheep = Instantiate(BlueSheepTemplate, position, rotation) as GameObject;
-//            }
             else
             {
                 sheep = Instantiate(WhiteSheepTemplate, position, rotation) as GameObject;
@@ -119,6 +112,8 @@ public class SheepGenerator : MonoBehaviour
 
             if (sheep == null) continue;
             sheep.transform.SetParent(transform);
+            sheep.name = string.Format("{0}", count);
+            count += 1;
             _shepherd.RegisterSheep(sheep);
         }
     }

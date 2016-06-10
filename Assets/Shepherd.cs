@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Assets;
@@ -6,7 +7,13 @@ using UnityEngine;
 public class Shepherd : MonoBehaviour
 {
     private HashSet<GameObject> _sheeps;
-    private HashSet<Flock> _flocks;
+    public HashSet<Flock> Flocks;
+    private DogAgent _dog;
+
+    private void Start()
+    {
+        _dog = GameObject.FindGameObjectWithTag("Dog").GetComponent<DogAgent>();
+    }
 
     public void RegisterSheep(GameObject sheep)
     {
@@ -15,13 +22,80 @@ public class Shepherd : MonoBehaviour
 
     public void InitSheep()
     {
-        _flocks = new HashSet<Flock>();
+        Flocks = new HashSet<Flock>();
         _sheeps = new HashSet<GameObject>();
     }
 
     private void FixedUpdate()
     {
-        _flocks.Clear();
+        Flocks.Clear();
+        Flocks = SplitTooSmall(GetFlocksByNeighboursNumber());
+
+        if (_dog.CurrentDogState == DogAgent.DogState.Wait)
+        {
+            var targetName = FindTarget();
+            var targetObject = GameObject.Find(targetName);
+            if (targetObject == null)
+            {
+                Debug.Log("Finished!");
+                return;
+            }
+            var targetFlock = FindClosestFlock(targetObject.transform.position);
+            _dog.SetTarget(targetObject, targetFlock);
+        }
+    }
+
+    private string FindTarget()
+    {
+        var targetName = string.Format("{0}", float.MaxValue);
+        var currentDistance = float.MaxValue;
+
+        foreach (var flock in Flocks)
+        {
+            if (flock.GetSheeps().Count == 1)
+            {
+                var single = flock.GetSheeps().First();
+                var dist = Vector3.Distance(single.transform.position, _dog.transform.position);
+                if (dist < currentDistance)
+                {
+                    targetName = single.name;
+                    currentDistance = dist;
+                }
+            }
+        }
+
+        return targetName;
+    }
+
+    private Flock FindClosestFlock(Vector3 position)
+    {
+        var target = new Flock();
+        var currentFlockDist = float.MaxValue;
+
+        foreach (var flock in Flocks)
+        {
+            if (flock.GetSheeps().Count != 1)
+            {
+                var dist = Vector3.Distance(flock.GetCenter(), position);
+                if (dist < currentFlockDist)
+                {
+                    target = flock;
+                    currentFlockDist = dist;
+                }
+            }
+        }
+
+        if (Math.Abs(currentFlockDist - float.MaxValue) < 0.005f || target.GetSheeps().Count == 0)
+        {
+            target = Flocks.First(f => f.GetCenter() != position);
+        }
+
+        return target;
+    }
+
+    private HashSet<Flock> GetFlocksByNeighboursNumber()
+    {
+        var flocks = new HashSet<Flock>();
         var list = _sheeps.OrderByDescending(s => s.GetComponent<SheepAgent>().NeighbourSheeps.Count);
         var used = new HashSet<GameObject>();
         foreach (var target in list)
@@ -37,9 +111,34 @@ public class Shepherd : MonoBehaviour
                     used.Add(s);
                 }
 
-                _flocks.Add(flock);
+                flocks.Add(flock);
             }
         }
+
+        return flocks;
+    }
+
+    private HashSet<Flock> SplitTooSmall(HashSet<Flock> flocks)
+    {
+        var result = new HashSet<Flock>();
+        foreach (var flock in flocks)
+        {
+            if (flock.GetSheeps().Count < 4)
+            {
+                foreach (var sheep in flock.GetSheeps())
+                {
+                    var newFlock = new Flock();
+                    newFlock.AddSheep(sheep);
+                    result.Add(newFlock);
+                }
+            }
+            else
+            {
+                result.Add(flock);
+            }
+        }
+
+        return result;
     }
 
     private HashSet<GameObject> GetNeighboursForFlock(HashSet<GameObject> result, GameObject sheep, Flock flock)

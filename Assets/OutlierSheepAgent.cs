@@ -12,6 +12,6 @@ public class OutlierSheepAgent : SheepAgent
         };
 
         MaxCooldown = 600;
-        FlockLeaveProbability = 0.995f;
+        FlockLeaveProbability = 0.999f;
     }
 }
