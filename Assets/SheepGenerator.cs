@@ -50,6 +50,7 @@ public class SheepGenerator : MonoBehaviour
     public void StopSimulation()
     {
         _shepherd.DeleteAllSheeps();
+        _shepherd.StopDog();
     }
 
     private IList<Vector3> GeneratePositions(int number)

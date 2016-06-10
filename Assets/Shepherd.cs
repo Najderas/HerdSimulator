@@ -42,6 +42,7 @@ public class Shepherd : MonoBehaviour
             }
             var targetFlock = FindClosestFlock(targetObject.transform.position);
             _dog.SetTarget(targetObject, targetFlock);
+            //_dog.CurrentDogState = DogAgent.DogState.Approach;
         }
     }
 
@@ -157,7 +158,7 @@ public class Shepherd : MonoBehaviour
 
     public void DeleteAllSheeps()
     {
-        _flocks.Clear();
+        Flocks.Clear();
         foreach (var sheep in _sheeps)
         {
             Destroy(sheep);
@@ -165,9 +166,14 @@ public class Shepherd : MonoBehaviour
         _sheeps.Clear();
     }
 
+    public void StopDog()
+    {
+        _dog.CurrentDogState = DogAgent.DogState.Wait;
+    }
+
     public bool OneFlockLeft()
     {
-        return _flocks.Count == 1;
+        return Flocks.Count == 1;
     }
 
 }
