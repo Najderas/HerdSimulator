@@ -60,6 +60,8 @@ public class DogAgent : MonoBehaviour
 
     private void Approach()
     {
+        if(_targetObject == null) print("targetObject null");
+        if (_flockPosition == null) print("flockposition null");
         _steerPoint = _targetObject.transform.position - (_flockPosition - _targetObject.transform.position).normalized * 1.2f;
 
         if (Vector3.Distance(transform.position, _targetObject.transform.position) <= SafeZone)

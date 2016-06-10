@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 public class SimulationScript : MonoBehaviour
@@ -75,9 +76,14 @@ public class SimulationScript : MonoBehaviour
         if (runMultipleSimulations) return;
         runMultipleSimulations = true;
         // init file
+        using (StreamWriter writetext = new StreamWriter("write.txt"))
+        {
+            writetext.WriteLine("Seed; sheep number; flocks; ratio; time;");
+        }
         StartNextSimulation();
     }
 
+    private DateTime timeStarted;
     void StartNextSimulation()
     {
         var param = parametersList.FirstOrDefault();
@@ -86,6 +92,11 @@ public class SimulationScript : MonoBehaviour
         flockNumber = param.flocksNumber;
         outlierToLightRatio = param.outlierToLightRatio;
         // TODO: write down them to file
+        using (StreamWriter writetext = new StreamWriter("wyniki.txt"))
+        {
+            writetext.Write(";" + param.sheepNumber+";"+ param.flocksNumber+";"+ param.outlierToLightRatio);
+        }
+        timeStarted = DateTime.Now;
         print("Next params - sheeps: " + param.sheepNumber + ", flocks: " + param.flocksNumber + ", ratio: " + param.outlierToLightRatio);
         startSimulation = true;
     }
@@ -93,6 +104,11 @@ public class SimulationScript : MonoBehaviour
     void nextSimulationEnded()
     {
         //TODO: write down time consumed
+        var end = (DateTime.Now - timeStarted).Seconds;
+        using (StreamWriter writetext = new StreamWriter("wyniki.txt"))
+        {
+            writetext.WriteLine(";" + end + ";");
+        }
     }
 
     void GenerateSimulationParameters()

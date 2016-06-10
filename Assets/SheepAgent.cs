@@ -137,6 +137,10 @@ public class SheepAgent : MonoBehaviour
 
     private void OnTriggerStay2D(Collider2D other)
     {
+        if (other.CompareTag("Sheep"))
+        {
+            if(!NeighbourSheeps.Contains(other.gameObject)) NeighbourSheeps.Add(other.gameObject);
+        }
         if (other.CompareTag("Dog"))
         {
             SetState(SheepState.Flee);

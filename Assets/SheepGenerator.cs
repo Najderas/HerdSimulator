@@ -26,6 +26,7 @@ public class SheepGenerator : MonoBehaviour
         _shepherd = transform.GetComponent<Shepherd>();
         _shepherd.InitSheep();
         Random.seed = simulationScript.randomSeed;
+        _shepherd.StartDog();
 
     }
 
